@@ -5,8 +5,10 @@
 */
 
 // Subpipeline imports
-include { SANGER_TOL_BTK            } from '../modules/local/sanger-tol/blobtoolkit/main'
-include { SANGER_TOL_CPRETEXT       } from '../modules/local/sanger-tol/curationpretext/main'
+// include { SANGER_TOL_BTK            } from '../modules/local/sanger-tol/blobtoolkit/main'
+// include { SANGER_TOL_CPRETEXT       } from '../modules/local/sanger-tol/curationpretext/main'
+include { NEXTFLOW_RUN as SANGER_TOL_BTK } from '../modules/local/nextflow/run/main'
+include { NEXTFLOW_RUN as SANGER_TOL_CPRETEXT } from '../modules/local/nextflow/run/main'
 
 // Module imports
 include { CAT_CAT                   } from '../modules/nf-core/cat/cat/main'
@@ -53,9 +55,9 @@ workflow EAR {
 
     //
     // NOTE: THIS STAYS HERE | MOVING IT INTO PIPELINE INIT BREAKS IT
-    // LOGIC: SPLITS INPUT STEPS INTO A LIST THAT CONTROLLS PROCESSES ON EXISTENCE
+    // LOGIC: SPLITS INPUT STEPS INTO A LIST THAT CONTROLS PROCESSES ON EXISTENCE
     //
-    exclude_steps   = params.steps ? params.steps.split(",") : "NONE"
+    exclude_steps   = params.steps ? params.steps.tokenize(",") : "NONE"
     full_list       = ["btk", "cpretext", "merquryfk", "NONE"]
 
     if (!full_list.containsAll(exclude_steps)) {
