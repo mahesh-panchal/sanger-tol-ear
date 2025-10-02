@@ -7,7 +7,6 @@ process BTK_INPUT {
     val tax_dump
     val busco_lineages
     val taxon
-    val gca_accession
     val busco_config
     val btk_extra_opts
 
@@ -23,7 +22,6 @@ process BTK_INPUT {
         'blastp': blastp,
         'blastn': blastn,
         'blastx': blastx,
-        'accession': gca_accession,
     ].findAll { it.value } // filter out falsy values (null, false, "", [], etc)
     def jsonBuilder = new groovy.json.JsonBuilder(btk_inputs)
     file("${task.workDir}/btk_params_file.json").text = jsonBuilder.toPrettyString()

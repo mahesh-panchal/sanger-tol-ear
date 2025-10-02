@@ -13,16 +13,16 @@ include { NEXTFLOW_RUN as SANGER_TOL_BTK } from '../modules/local/nextflow/run/m
 include { NEXTFLOW_RUN as SANGER_TOL_CPRETEXT } from '../modules/local/nextflow/run/main'
 
 // Module imports
-include { CAT_CAT                   } from '../modules/nf-core/cat/cat/main'
-include { GENERATE_SAMPLESHEET      } from '../modules/local/generate_samplesheet/main'
-include { GFASTATS                  } from '../modules/nf-core/gfastats/main'
-include { MERQURYFK_MERQURYFK       } from '../modules/nf-core/merquryfk/merquryfk/main'
+include { CAT_CAT } from '../modules/nf-core/cat/cat/main'
+include { GENERATE_SAMPLESHEET } from '../modules/local/generate_samplesheet/main'
+include { GFASTATS } from '../modules/nf-core/gfastats/main'
+include { MERQURYFK_MERQURYFK } from '../modules/nf-core/merquryfk/merquryfk/main'
 
 // Plugin imports
-include { paramsSummaryMap          } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc      } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML    } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_ear_pipeline'
+include { paramsSummaryMap } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_ear_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -31,7 +31,6 @@ include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_e
 */
 
 workflow EAR {
-
     take:
     ch_sample_id
     ch_reference_hap1
@@ -52,17 +51,17 @@ workflow EAR {
     ch_busco_config
 
     main:
-    ch_versions     = Channel.empty()
+    ch_versions = Channel.empty()
 
     //
     // NOTE: THIS STAYS HERE | MOVING IT INTO PIPELINE INIT BREAKS IT
     // LOGIC: SPLITS INPUT STEPS INTO A LIST THAT CONTROLS PROCESSES ON EXISTENCE
     //
-    exclude_steps   = params.steps ? params.steps.tokenize(",") : "NONE"
-    full_list       = ["btk", "cpretext", "merquryfk", "NONE"]
+    exclude_steps = params.steps ? params.steps.tokenize(",") : "NONE"
+    full_list = ["btk", "cpretext", "merquryfk", "NONE"]
 
     if (!full_list.containsAll(exclude_steps)) {
-        error "There is an extra argument given on Command Line: \nCheck contents of: $exclude_steps\nMaster list is: $full_list"
+        error("There is an extra argument given on Command Line: \nCheck contents of: ${exclude_steps}\nMaster list is: ${full_list}")
     }
 
     //
@@ -73,12 +72,13 @@ workflow EAR {
         ch_sample_id
             .combine(ch_reference_hap2)
             .combine(ch_reference_haplotigs)
-            .map{ sample_id, file1, file2 ->
+            .map { sample_id, file1, file2 ->
                 tuple(
-                    [   id: sample_id   ],
-                    [   file1,
-                        file2
-                    ]
+                    [id: sample_id],
+                    [
+                        file1,
+                        file2,
+                    ],
                 )
             }
             .set {
@@ -86,10 +86,11 @@ workflow EAR {
             }
 
         CAT_CAT(cat_cat_input)
-        ch_versions = ch_versions.mix( CAT_CAT.out.versions )
+        ch_versions = ch_versions.mix(CAT_CAT.out.versions)
 
-        ch_haplotype_fasta  = CAT_CAT.out.file_out
-    } else {
+        ch_haplotype_fasta = CAT_CAT.out.file_out
+    }
+    else {
         ch_haplotype_fasta = ch_reference_hap2
     }
 
@@ -102,12 +103,12 @@ workflow EAR {
         "fasta",
         [],
         [],
-        [[],[]],
-        [[],[]],
-        [[],[]],
-        [[],[]]
+        [[], []],
+        [[], []],
+        [[], []],
+        [[], []],
     )
-    ch_versions     = ch_versions.mix( GFASTATS.out.versions )
+    ch_versions = ch_versions.mix(GFASTATS.out.versions)
 
 
     //
@@ -121,12 +122,13 @@ workflow EAR {
             .combine(ch_haplotype_fasta)
             .combine(ch_fastk_hist)
             .combine(ch_fastk_ktab)
-            .map{ meta1, primary, meta2, haplotigs, fastk_hist, fastk_ktab ->
-                tuple(  meta1,
-                        fastk_hist,
-                        fastk_ktab,
-                        primary,
-                        haplotigs
+            .map { meta1, primary, meta2, haplotigs, fastk_hist, fastk_ktab ->
+                tuple(
+                    meta1,
+                    fastk_hist,
+                    fastk_ktab,
+                    primary,
+                    haplotigs,
                 )
             }
             .set { merquryfk_input }
@@ -137,9 +139,9 @@ workflow EAR {
         MERQURYFK_MERQURYFK(
             merquryfk_input,
             [],
-            []
+            [],
         )
-        ch_versions     = ch_versions.mix( MERQURYFK_MERQURYFK.out.versions )
+        ch_versions = ch_versions.mix(MERQURYFK_MERQURYFK.out.versions)
     }
 
 
@@ -153,24 +155,20 @@ workflow EAR {
         GENERATE_SAMPLESHEET(
             ch_reference_hap1,
             ch_longread_dir,
-            ch_btk_read_layout
+            ch_btk_read_layout,
         )
-        ch_versions     = ch_versions.mix( GENERATE_SAMPLESHEET.out.versions )
-
+        ch_versions = ch_versions.mix(GENERATE_SAMPLESHEET.out.versions)
 
         //
         // MODULE: Run Sanger-ToL/BlobToolKit
         //
-        SANGER_TOL_BTK (
-            // pipeline name
+        SANGER_TOL_BTK(
             'sanger-tol/blobtoolkit',
-            // nextflow_opts
             [
                 "-profile ${workflow.profile}",
                 "-r ${params.btk_version}",
-                params.btk_nf_params
+                params.btk_nf_params,
             ].join(" "),
-            // params_file
             BTK_INPUT(
                 ch_reference_hap1,
                 ch_btk_un_diamond_db,
@@ -179,22 +177,20 @@ workflow EAR {
                 ch_btk_ncbi_taxonomy_path,
                 ch_busco_lineages,
                 ch_btk_taxid,
-                'GCA_0001',
                 ch_busco_config,
                 [
+                    'accession': 'GCA_0001',
                     'use_work_dir_as_temp': true,
                     'align': true,
-                ] // TODO: BTK extra workflow parameters - from file or string? (params.btk_nf_params is intended for -nf-param but can have --wf-param too)
+                ],
             ).json_params_file,
-            // samplesheet
             GENERATE_SAMPLESHEET.out.csv,
-            // additional nextflow.config to BTK to override resources, etc
             params.btk_extra_config ? file(params.btk_extra_config, checkIfExists: true) : [],
-            // cache_dir
-            workflow.workDir.resolve('sanger-tol/blobtoolkit').toUriString()
+            workflow.workDir.resolve('sanger-tol/blobtoolkit').toUriString(),
         )
-        // TODO: Pull versions.yml from pipeline info folder
-        // ch_versions     = ch_versions.mix(SANGER_TOL_BTK.out.versions)
+        ch_versions = ch_versions.mix(
+            SANGER_TOL_BTK.out.outdir.map { outdir -> outdir.resolve('pipeline_info/sanger-tol_blobtoolkit_software_versions.yml') }
+        )
     }
 
 
@@ -211,23 +207,24 @@ workflow EAR {
             [
                 "-profile ${workflow.profile}",
                 "-r ${params.cpretext_version}",
-                params.cpretext_nf_params
+                params.cpretext_nf_params,
             ].join(" "),
             CPRETEXT_INPUT(
                 ch_reference_hap1,
                 ch_longread_dir,
                 ch_cpretext_hic_dir,
-                ch_cpretext_telomotif.map{it -> it[1]},
+                ch_cpretext_telomotif.map { it -> it[1] },
                 ch_cpretext_aligner,
-                [:]
+                [:],
             ).json_params_file,
-            ch_reference_hap1, // Assembly file
+            ch_reference_hap1,
             params.cpretext_extra_config ? file(params.cpretext_extra_config, checkIfExists: true) : [],
-            workflow.workDir.resolve('sanger-tol/curationpretext').toUriString()
+            workflow.workDir.resolve('sanger-tol/curationpretext').toUriString(),
         )
-        // ch_versions     = ch_versions.mix( SANGER_TOL_CPRETEXT.out.versions )
+        ch_versions = ch_versions.mix(
+            SANGER_TOL_CPRETEXT.out.outdir.map { outdir -> outdir.resolve('pipeline_info/sanger-tol_curationpretext_software_versions.yml') }
+        )
     }
-
 
     //
     // Collate and save software versions
@@ -235,19 +232,12 @@ workflow EAR {
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
-            name:  'ear_software_'  + 'versions.yml',
+            name: 'ear_software_' + 'versions.yml',
             sort: true,
-            newLine: true
-        ).set { ch_collated_versions }
-
+            newLine: true,
+        )
+        .set { ch_collated_versions }
 
     emit:
-    versions       = ch_versions                 // channel: [ path(versions.yml) ]
-
+    versions = ch_versions // channel: [ path(versions.yml) ]
 }
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    THE END
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
