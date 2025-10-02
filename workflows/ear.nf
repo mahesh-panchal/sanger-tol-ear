@@ -7,6 +7,7 @@
 // Subpipeline imports
 // include { SANGER_TOL_BTK            } from '../modules/local/sanger-tol/blobtoolkit/main'
 // include { SANGER_TOL_CPRETEXT       } from '../modules/local/sanger-tol/curationpretext/main'
+include { BTK_INPUT } from '../modules/local/btk/input/main'
 include { NEXTFLOW_RUN as SANGER_TOL_BTK } from '../modules/local/nextflow/run/main'
 include { NEXTFLOW_RUN as SANGER_TOL_CPRETEXT } from '../modules/local/nextflow/run/main'
 
@@ -61,7 +62,7 @@ workflow EAR {
     full_list       = ["btk", "cpretext", "merquryfk", "NONE"]
 
     if (!full_list.containsAll(exclude_steps)) {
-        exit 1, "There is an extra argument given on Command Line: \nCheck contents of: $exclude_steps\nMaster list is: $full_list"
+        error "There is an extra argument given on Command Line: \nCheck contents of: $exclude_steps\nMaster list is: $full_list"
     }
 
     //
@@ -161,19 +162,36 @@ workflow EAR {
         // MODULE: Run Sanger-ToL/BlobToolKit
         //
         SANGER_TOL_BTK (
-            ch_reference_hap1,
+            // pipeline name
+            'sanger-tol/blobtoolkit',
+            // nextflow_opts
+            [
+                "-profile ${workflow.profile}",
+                "-r ${params.btk_version}",
+                params.btk_nf_params
+            ].join(" "),
+            // params_file
+            BTK_INPUT(
+                ch_reference_hap1,
+                ch_btk_un_diamond_db,
+                ch_btk_nt_db,
+                ch_btk_un_diamond_db,
+                ch_btk_ncbi_taxonomy_path,
+                ch_busco_lineages,
+                ch_btk_taxid,
+                'GCA_0001',
+                ch_busco_config,
+                [:] // TODO: BTK extra workflow parameters - from file or string? (params.btk_nf_params is intended for -nf-param but can have --wf-param too)
+            ).json_params_file,
+            // samplesheet
             GENERATE_SAMPLESHEET.out.csv,
-            ch_longread_dir,
-            ch_btk_un_diamond_db,
-            ch_btk_nt_db,
-            ch_btk_un_diamond_db,
-            ch_btk_ncbi_taxonomy_path,
-            ch_busco_lineages,
-            ch_btk_taxid,
-            'GCA_0001',
-            ch_busco_config
+            // additional nextflow.config to BTK to override resources, etc
+            params.btk_extra_config ? file(params.btk_extra_config, checkIfExists: true) : [],
+            // cache_dir
+            workflow.workDir.resolve('sanger-tol/blobtoolkit').toUriString()
         )
-        ch_versions     = ch_versions.mix(SANGER_TOL_BTK.out.versions)
+        // TODO: Pull versions.yml from pipeline info folder
+        // ch_versions     = ch_versions.mix(SANGER_TOL_BTK.out.versions)
     }
 
 
