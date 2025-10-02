@@ -18,8 +18,7 @@ process CPRETEXT_INPUT {
         'cram': cram_dir,
         'teloseq': telomere_motif,
         'aligner': aligner,
-    ].findAll { it.value }
-    // filter out falsy values (null, false, "", [], etc)
+    ].findAll { it.value } // filter out falsy values (null, false, "", [], etc)
     def jsonBuilder = new groovy.json.JsonBuilder(cpretext_inputs)
     file("${task.workDir}/cpretext_params_file.json").text = jsonBuilder.toPrettyString()
 }

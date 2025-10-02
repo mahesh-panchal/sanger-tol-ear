@@ -1,5 +1,4 @@
 process BTK_INPUT {
-
     input:
     tuple val(meta), val(reference)
     val blastp
@@ -10,7 +9,7 @@ process BTK_INPUT {
     val taxon
     val gca_accession
     val busco_config
-    val btk_extra_opts // Map
+    val btk_extra_opts
 
     output:
     path "btk_params_file.json", emit: json_params_file
@@ -27,7 +26,7 @@ process BTK_INPUT {
         'accession': gca_accession,
         'use_work_dir_as_temp': true,
         'align': true,
-    ]
+    ].findAll { it.value } // filter out falsy values (null, false, "", [], etc)
     def jsonBuilder = new groovy.json.JsonBuilder(btk_inputs)
     file("${task.workDir}/btk_params_file.json").text = jsonBuilder.toPrettyString()
 }
