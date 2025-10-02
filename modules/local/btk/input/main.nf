@@ -24,8 +24,6 @@ process BTK_INPUT {
         'blastn': blastn,
         'blastx': blastx,
         'accession': gca_accession,
-        'use_work_dir_as_temp': true,
-        'align': true,
     ].findAll { it.value } // filter out falsy values (null, false, "", [], etc)
     def jsonBuilder = new groovy.json.JsonBuilder(btk_inputs)
     file("${task.workDir}/btk_params_file.json").text = jsonBuilder.toPrettyString()

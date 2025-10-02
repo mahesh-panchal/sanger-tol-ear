@@ -8,6 +8,7 @@
 // include { SANGER_TOL_BTK            } from '../modules/local/sanger-tol/blobtoolkit/main'
 // include { SANGER_TOL_CPRETEXT       } from '../modules/local/sanger-tol/curationpretext/main'
 include { BTK_INPUT } from '../modules/local/btk/input/main'
+include { CPRETEXT_INPUT } from '../modules/local/btk/input/main'
 include { NEXTFLOW_RUN as SANGER_TOL_BTK } from '../modules/local/nextflow/run/main'
 include { NEXTFLOW_RUN as SANGER_TOL_CPRETEXT } from '../modules/local/nextflow/run/main'
 
@@ -181,7 +182,10 @@ workflow EAR {
                 ch_btk_taxid,
                 'GCA_0001',
                 ch_busco_config,
-                [:] // TODO: BTK extra workflow parameters - from file or string? (params.btk_nf_params is intended for -nf-param but can have --wf-param too)
+                [
+                    'use_work_dir_as_temp': true,
+                    'align': true,
+                ] // TODO: BTK extra workflow parameters - from file or string? (params.btk_nf_params is intended for -nf-param but can have --wf-param too)
             ).json_params_file,
             // samplesheet
             GENERATE_SAMPLESHEET.out.csv,
@@ -211,7 +215,7 @@ workflow EAR {
             ch_cpretext_aligner,
             []
         )
-        ch_versions     = ch_versions.mix( SANGER_TOL_CPRETEXT.out.versions )
+        // ch_versions     = ch_versions.mix( SANGER_TOL_CPRETEXT.out.versions )
     }
 
 
