@@ -5,24 +5,22 @@
 */
 
 // Subpipeline imports
-// include { SANGER_TOL_BTK            } from '../modules/local/sanger-tol/blobtoolkit/main'
-// include { SANGER_TOL_CPRETEXT       } from '../modules/local/sanger-tol/curationpretext/main'
-include { BTK_INPUT } from '../modules/local/btk/input/main'
-include { CPRETEXT_INPUT } from '../modules/local/cpretext/input/main'
-include { NEXTFLOW_RUN as SANGER_TOL_BTK } from '../modules/local/nextflow/run/main'
+include { BTK_INPUT                           } from '../modules/local/btk/input/main'
+include { CPRETEXT_INPUT                      } from '../modules/local/cpretext/input/main'
+include { NEXTFLOW_RUN as SANGER_TOL_BTK      } from '../modules/local/nextflow/run/main'
 include { NEXTFLOW_RUN as SANGER_TOL_CPRETEXT } from '../modules/local/nextflow/run/main'
 
 // Module imports
-include { CAT_CAT } from '../modules/nf-core/cat/cat/main'
-include { GENERATE_SAMPLESHEET } from '../modules/local/generate_samplesheet/main'
-include { GFASTATS } from '../modules/nf-core/gfastats/main'
-include { MERQURYFK_MERQURYFK } from '../modules/nf-core/merquryfk/merquryfk/main'
+include { CAT_CAT                             } from '../modules/nf-core/cat/cat/main'
+include { GENERATE_SAMPLESHEET                } from '../modules/local/generate_samplesheet/main'
+include { GFASTATS                            } from '../modules/nf-core/gfastats/main'
+include { MERQURYFK_MERQURYFK                 } from '../modules/nf-core/merquryfk/merquryfk/main'
 
 // Plugin imports
-include { paramsSummaryMap } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_ear_pipeline'
+include { paramsSummaryMap                    } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc                } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML              } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText              } from '../subworkflows/local/utils_nfcore_ear_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,22 +67,21 @@ workflow EAR {
     //          IF HAPLOTIGS EXISTS THEN MERGE WITH HAPLOTYPE ASSEMBLY
     //
     ch_reference_haplotigs
-        .ifEmpty('NO_HAPLOTIGS')  // Use a marker value for empty case
+        .ifEmpty('NO_HAPLOTIGS')
         .combine(ch_sample_id)
         .combine(ch_reference_hap2)
         .branch { haplotigs, sample_id, hap2 ->
             concat_needed: haplotigs != 'NO_HAPLOTIGS'
-                return tuple([id: sample_id], [hap2, haplotigs])
+            return tuple([id: sample_id], [hap2, haplotigs])
             no_concat: true
-                return hap2
+            return hap2
         }
         .set { processing_branch }
 
     CAT_CAT(processing_branch.concat_needed)
     ch_versions = ch_versions.mix(CAT_CAT.out.versions)
 
-    ch_haplotype_fasta = CAT_CAT.out.file_out
-        .mix(processing_branch.no_concat)
+    ch_haplotype_fasta = CAT_CAT.out.file_out.mix(processing_branch.no_concat)
 
     //
     // MODULE: ASSEMBLY STATISTICS FOR THE FASTA
@@ -101,7 +98,6 @@ workflow EAR {
     )
     ch_versions = ch_versions.mix(GFASTATS.out.versions)
 
-
     //
     // LOGIC: STEP TO STOP MERQURY_FK RUNNING IF SPECIFIED BY USER
     //
@@ -113,7 +109,7 @@ workflow EAR {
             .combine(ch_haplotype_fasta)
             .combine(ch_fastk_hist)
             .combine(ch_fastk_ktab)
-            .map { meta1, primary, meta2, haplotigs, fastk_hist, fastk_ktab ->
+            .map { meta1, primary, _meta2, haplotigs, fastk_hist, fastk_ktab ->
                 tuple(
                     meta1,
                     fastk_hist,
@@ -134,7 +130,6 @@ workflow EAR {
         )
         ch_versions = ch_versions.mix(MERQURYFK_MERQURYFK.out.versions)
     }
-
 
     //
     // LOGIC: STEP TO STOP BTK RUNNING IF SPECIFIED BY USER
@@ -184,7 +179,6 @@ workflow EAR {
         )
     }
 
-
     //
     // LOGIC: STEP TO STOP CURATION_PRETEXT RUNNING IF SPECIFIED BY USER
     //
@@ -227,8 +221,8 @@ workflow EAR {
             sort: true,
             newLine: true,
         )
-        .set { ch_collated_versions }
+        .set { versions }
 
     emit:
-    versions = ch_versions // channel: [ path(versions.yml) ]
+    versions // channel: [ path(versions.yml) ]
 }
