@@ -68,32 +68,23 @@ workflow EAR {
     // LOGIC: IF HAPLOTIGS IS EMPTY THEN PASS ON HALPLOTYPE ASSEMBLY
     //          IF HAPLOTIGS EXISTS THEN MERGE WITH HAPLOTYPE ASSEMBLY
     //
-    if (ch_reference_haplotigs.ifEmpty(true)) {
-        ch_sample_id
-            .combine(ch_reference_hap2)
-            .combine(ch_reference_haplotigs)
-            .map { sample_id, file1, file2 ->
-                tuple(
-                    [id: sample_id],
-                    [
-                        file1,
-                        file2,
-                    ],
-                )
-            }
-            .set {
-                cat_cat_input
-            }
+    ch_reference_haplotigs
+        .ifEmpty('NO_HAPLOTIGS')  // Use a marker value for empty case
+        .combine(ch_sample_id)
+        .combine(ch_reference_hap2)
+        .branch { haplotigs, sample_id, hap2 ->
+            concat_needed: haplotigs != 'NO_HAPLOTIGS'
+                return tuple([id: sample_id], [hap2, haplotigs])
+            no_concat: true
+                return hap2
+        }
+        .set { processing_branch }
 
-        CAT_CAT(cat_cat_input)
-        ch_versions = ch_versions.mix(CAT_CAT.out.versions)
+    CAT_CAT(processing_branch.concat_needed)
+    ch_versions = ch_versions.mix(CAT_CAT.out.versions)
 
-        ch_haplotype_fasta = CAT_CAT.out.file_out
-    }
-    else {
-        ch_haplotype_fasta = ch_reference_hap2
-    }
-
+    ch_haplotype_fasta = CAT_CAT.out.file_out
+        .mix(processing_branch.no_concat)
 
     //
     // MODULE: ASSEMBLY STATISTICS FOR THE FASTA
