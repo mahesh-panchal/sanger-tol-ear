@@ -8,7 +8,7 @@
 // include { SANGER_TOL_BTK            } from '../modules/local/sanger-tol/blobtoolkit/main'
 // include { SANGER_TOL_CPRETEXT       } from '../modules/local/sanger-tol/curationpretext/main'
 include { BTK_INPUT } from '../modules/local/btk/input/main'
-include { CPRETEXT_INPUT } from '../modules/local/btk/input/main'
+include { CPRETEXT_INPUT } from '../modules/local/cpretext/input/main'
 include { NEXTFLOW_RUN as SANGER_TOL_BTK } from '../modules/local/nextflow/run/main'
 include { NEXTFLOW_RUN as SANGER_TOL_CPRETEXT } from '../modules/local/nextflow/run/main'
 
@@ -208,12 +208,23 @@ workflow EAR {
         // MODULE: Run SANGER-TOL/CurationPretext
         //
         SANGER_TOL_CPRETEXT(
-            ch_reference_hap1,
-            ch_longread_dir,
-            ch_cpretext_hic_dir,
-            ch_cpretext_telomotif.map{it -> it[1]},
-            ch_cpretext_aligner,
-            []
+            'sanger-tol/curationpretext',
+            [
+                "-profile ${workflow.profile}",
+                "-r ${params.cpretext_version}",
+                params.cpretext_nf_params
+            ].join(" "),
+            CPRETEXT_INPUT(
+                ch_reference_hap1,
+                ch_longread_dir,
+                ch_cpretext_hic_dir,
+                ch_cpretext_telomotif.map{it -> it[1]},
+                ch_cpretext_aligner,
+                [:]
+            ).json_params_file,
+            ch_reference_hap1, // Assembly file
+            params.cpretext_extra_config ? file(params.cpretext_extra_config, checkIfExists: true) : [],
+            workflow.workDir.resolve('sanger-tol/curationpretext').toUriString()
         )
         // ch_versions     = ch_versions.mix( SANGER_TOL_CPRETEXT.out.versions )
     }

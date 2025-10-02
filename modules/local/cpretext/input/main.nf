@@ -5,7 +5,6 @@ process CPRETEXT_INPUT {
     val cram_dir
     val telomere_motif
     val aligner
-    val config_file
     val cpretext_extra_opts
 
     output:
