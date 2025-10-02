@@ -53,7 +53,6 @@ workflow EAR {
 
     main:
     ch_versions     = Channel.empty()
-    ch_align_bam    = Channel.empty()
 
     //
     // NOTE: THIS STAYS HERE | MOVING IT INTO PIPELINE INIT BREAKS IT
