@@ -39,7 +39,6 @@ workflow YAML_INPUT {
     cpretext_aligner        = Channel.of(inputs.curationpretext.aligner)
     cpretext_telomere_motif = Channel.of([id: inputs.assembly_id], inputs.curationpretext.telomere_motif)
     cpretext_hic_dir        = Channel.fromPath(inputs.curationpretext.hic_dir, checkIfExists: true, type: 'dir')
-        .map { dirpath -> tuple([id: inputs.assembly_id], dirpath) }
 
     emit:
     sample_id               = Channel.of(inputs.assembly_id)
@@ -62,6 +61,6 @@ workflow YAML_INPUT {
     btk_taxid               = Channel.of(inputs.btk.taxid)
     btk_gca_accession       = Channel.of(inputs.btk.gca_accession)
     busco_lineages          = Channel.of(inputs.btk.lineages)
-    busco_config            = Channel.fromPath(inputs.btk.config, checkIfExists: true)
+    busco_config            = inputs.btk.config ? Channel.fromPath(inputs.btk.config, checkIfExists: true) : Channel.empty()
     versions                = ch_versions
 }

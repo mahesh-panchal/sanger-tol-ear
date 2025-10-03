@@ -12,7 +12,7 @@ include { NEXTFLOW_RUN as SANGER_TOL_CPRETEXT } from '../modules/local/nextflow/
 
 // Module imports
 include { CAT_CAT                             } from '../modules/nf-core/cat/cat/main'
-include { GENERATE_SAMPLESHEET                } from '../modules/local/generate_samplesheet/main'
+include { GENERATE_BTK_SAMPLESHEET            } from '../modules/local/generate_samplesheet/main'
 include { GFASTATS                            } from '../modules/nf-core/gfastats/main'
 include { MERQURYFK_MERQURYFK                 } from '../modules/nf-core/merquryfk/merquryfk/main'
 
@@ -40,7 +40,6 @@ workflow EAR {
     ch_cpretext_hic_dir
     ch_cpretext_telomotif
     ch_cpretext_aligner
-    ch_btk_read_layout
     ch_btk_un_diamond_db
     ch_btk_nt_db
     ch_btk_ncbi_taxonomy_path
@@ -138,12 +137,10 @@ workflow EAR {
         //
         // MODULE: GENERATE_SAMPLESHEET creates a csv for the blobtoolkit pipeline
         //
-        GENERATE_SAMPLESHEET(
-            ch_reference_hap1,
+        GENERATE_BTK_SAMPLESHEET(
+            ch_sample_id,
             ch_longread_dir,
-            ch_btk_read_layout,
         )
-        ch_versions = ch_versions.mix(GENERATE_SAMPLESHEET.out.versions)
 
         //
         // MODULE: Run Sanger-ToL/BlobToolKit
@@ -170,7 +167,7 @@ workflow EAR {
                     'align': true,
                 ],
             ).json_params_file,
-            GENERATE_SAMPLESHEET.out.csv,
+            GENERATE_BTK_SAMPLESHEET.out.csv,
             params.btk_extra_config ? file(params.btk_extra_config, checkIfExists: true) : [],
             workflow.workDir.resolve('sanger-tol/blobtoolkit').toUriString(),
         )
