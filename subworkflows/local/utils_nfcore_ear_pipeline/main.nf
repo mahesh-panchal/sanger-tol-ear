@@ -67,7 +67,7 @@ workflow PIPELINE_INITIALISATION {
     //
     // Create channel from input file provided through params.input
     //
-    YAML_INPUT (params.input)
+    YAML_INPUT (input)
 
 
     emit:
