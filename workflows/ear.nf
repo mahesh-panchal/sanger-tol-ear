@@ -150,6 +150,8 @@ workflow EAR {
             [
                 "-profile ${workflow.profile}",
                 "-r ${params.btk_version}",
+                "-resume",
+                "-ansi-log false",
                 params.btk_nf_params,
             ].join(" "),
             BTK_INPUT(
@@ -189,6 +191,8 @@ workflow EAR {
             [
                 "-profile ${workflow.profile}",
                 "-r ${params.cpretext_version}",
+                "-resume",
+                "-ansi-log false",
                 params.cpretext_nf_params,
             ].join(" "),
             CPRETEXT_INPUT(
