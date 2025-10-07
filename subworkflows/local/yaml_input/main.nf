@@ -16,10 +16,12 @@ workflow YAML_INPUT {
     //
     def ch_hap1 = Channel.fromPath(inputs.reference_hap1, checkIfExists: true)
         .map { fasta -> tuple([id: inputs.assembly_id, file: 'hap1'], fasta) }
-    def ch_hap2 = Channel.fromPath(inputs.reference_hap2, checkIfExists: true)
-        .map { fasta -> tuple([id: inputs.assembly_id, file: 'hap2'], fasta) }
-    def ch_haplotigs = Channel.fromPath(inputs.reference_haplotigs, checkIfExists: true)
-        .map { fasta -> tuple([id: inputs.assembly_id, file: 'haplotigs'], fasta) }
+    def ch_hap2 = inputs.reference_hap2
+        ? Channel.fromPath(inputs.reference_hap2, checkIfExists: true).map { fasta -> tuple([id: inputs.assembly_id, file: 'hap2'], fasta) }
+        : Channel.empty()
+    def ch_haplotigs = inputs.reference_haplotigs
+        ? Channel.fromPath(inputs.reference_haplotigs, checkIfExists: true).map { fasta -> tuple([id: inputs.assembly_id, file: 'haplotigs'], fasta) }
+        : Channel.empty()
     GUNZIP(ch_hap1.mix(ch_hap2, ch_haplotigs).filter { _meta, fasta -> fasta.endsWith('.gz') })
     ch_versions = ch_versions.mix(GUNZIP.out.versions.first())
 
@@ -36,9 +38,9 @@ workflow YAML_INPUT {
         .mix(GUNZIP.out.gunzip.filter { meta, _fasta -> meta.file == 'haplotigs' })
         .map { _meta, fasta -> fasta }
 
-    cpretext_aligner        = Channel.of(inputs.curationpretext.aligner)
+    cpretext_aligner = Channel.of(inputs.curationpretext.aligner)
     cpretext_telomere_motif = Channel.of([id: inputs.assembly_id], inputs.curationpretext.telomere_motif)
-    cpretext_hic_dir        = Channel.fromPath(inputs.curationpretext.hic_dir, checkIfExists: true, type: 'dir')
+    cpretext_hic_dir = Channel.fromPath(inputs.curationpretext.hic_dir, checkIfExists: true, type: 'dir')
 
     emit:
     sample_id               = Channel.of(inputs.assembly_id)
