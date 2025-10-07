@@ -57,7 +57,7 @@ workflow YAML_INPUT {
     btk_nt_database         = Channel.fromPath(inputs.btk.nt_database, checkIfExists: true)
     btk_nt_database_prefix  = Channel.of(inputs.btk.nt_database_prefix)
     btk_nr_diamond_database = Channel.fromPath(inputs.btk.diamond_nr_database_path, checkIfExists: true)
-    btk_un_diamond_database = Channel.fromPath(inputs.btk.diamond_uniprot_database_path, checkIfExist: true)
+    btk_un_diamond_database = Channel.fromPath(inputs.btk.diamond_uniprot_database_path, checkIfExists: true)
     btk_ncbi_taxonomy_path  = Channel.fromPath(inputs.btk.ncbi_taxonomy_path, checkIfExists: true)
     btk_taxid               = Channel.of(inputs.btk.taxid)
     btk_gca_accession       = Channel.of(inputs.btk.gca_accession)
