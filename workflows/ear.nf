@@ -152,8 +152,8 @@ workflow EAR {
                 "-r ${params.btk_version}",
                 "-resume",
                 "-ansi-log false",
-                params.btk_nf_params,
-            ].join(" "),
+                params.btk_nf_params ?: "",
+            ].minus("").join(" "),
             BTK_INPUT(
                 ch_reference_hap1,
                 ch_btk_un_diamond_db,
@@ -193,8 +193,8 @@ workflow EAR {
                 "-r ${params.cpretext_version}",
                 "-resume",
                 "-ansi-log false",
-                params.cpretext_nf_params,
-            ].join(" "),
+                params.cpretext_nf_params?: "",
+            ].minus("").join(" "),
             CPRETEXT_INPUT(
                 ch_reference_hap1,
                 ch_longread_dir,
@@ -203,7 +203,7 @@ workflow EAR {
                 ch_cpretext_aligner,
                 [:],
             ).json_params_file,
-            ch_reference_hap1,
+            ch_reference_hap1.map{ _meta, primary_assembly -> primary_assembly },
             params.cpretext_extra_config ? file(params.cpretext_extra_config, checkIfExists: true) : [],
             workflow.workDir.resolve('sanger-tol/curationpretext').toUriString(),
         )
