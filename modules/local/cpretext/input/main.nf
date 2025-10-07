@@ -1,4 +1,6 @@
 process CPRETEXT_INPUT {
+    executor 'local'
+
     input:
     tuple val(meta), val(reference)
     val longread_dir

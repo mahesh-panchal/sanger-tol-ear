@@ -1,6 +1,7 @@
 process NEXTFLOW_RUN {
     // directives:
     tag "${pipeline_name}"
+    executor 'local'
 
     input:
     val pipeline_name     // String

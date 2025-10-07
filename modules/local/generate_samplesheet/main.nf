@@ -1,6 +1,7 @@
 process GENERATE_BTK_SAMPLESHEET {
     tag "$meta.id"
     label "process_low"
+    executor 'local'
 
     input:
     val(meta)
@@ -8,7 +9,6 @@ process GENERATE_BTK_SAMPLESHEET {
 
     output:
     tuple val(meta),    path("btk_samplesheet.csv"), emit: csv
-    path "versions.yml",                             emit: versions
 
     exec:
     def fasta_files = files(pacbio_path.resolve('*.fasta.gz'))

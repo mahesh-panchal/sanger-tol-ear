@@ -1,4 +1,6 @@
 process BTK_INPUT {
+    executor 'local'
+
     input:
     tuple val(meta), val(reference)
     val blastp
