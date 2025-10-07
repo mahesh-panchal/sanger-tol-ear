@@ -43,7 +43,7 @@ workflow YAML_INPUT {
     cpretext_hic_dir = Channel.fromPath(inputs.curationpretext.hic_dir, checkIfExists: true, type: 'dir')
 
     emit:
-    sample_id               = Channel.of(inputs.assembly_id)
+    sample_id               = Channel.of([id: inputs.assembly_id])
     longread_type           = Channel.of(inputs.longread.type)
     longread_dir            = Channel.fromPath(inputs.longread.dir, checkIfExists: true, type: 'dir')
     reference_hap1

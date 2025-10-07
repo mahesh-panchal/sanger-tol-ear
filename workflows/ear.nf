@@ -69,9 +69,9 @@ workflow EAR {
         .ifEmpty('NO_HAPLOTIGS')
         .combine(ch_sample_id)
         .combine(ch_reference_hap2)
-        .branch { haplotigs, sample_id, hap2 ->
+        .branch { haplotigs, meta_sample_id, hap2 ->
             concat_needed: haplotigs != 'NO_HAPLOTIGS'
-            return tuple([id: sample_id], [hap2, haplotigs])
+            return tuple([id: meta_sample_id], [hap2, haplotigs])
             no_concat: true
             return hap2
         }
