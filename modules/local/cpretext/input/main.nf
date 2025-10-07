@@ -15,8 +15,8 @@ process CPRETEXT_INPUT {
     exec:
     def cpretext_inputs = cpretext_extra_opts + [
         'sample': meta.id,
-        'reads': longread_dir,
-        'cram': cram_dir,
+        'reads': longread_dir.toUriString(),
+        'cram': cram_dir.toUriString(),
         'teloseq': telomere_motif,
         'aligner': aligner,
     ].findAll { it.value } // filter out falsy values (null, false, "", [], etc)

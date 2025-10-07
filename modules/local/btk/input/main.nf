@@ -17,13 +17,13 @@ process BTK_INPUT {
 
     exec:
     def btk_inputs = btk_extra_opts + [
-        'fasta': reference,
+        'fasta': reference.toUriString(),
         'busco_lineages': busco_lineages,
         'taxon': taxon,
-        'taxdump': tax_dump,
-        'blastp': blastp,
-        'blastn': blastn,
-        'blastx': blastx,
+        'taxdump': tax_dump?.toUriString(),
+        'blastp': blastp?.toUriString(),
+        'blastn': blastn?.toUriString(),
+        'blastx': blastx?.toUriString(),
     ].findAll { it.value } // filter out falsy values (null, false, "", [], etc)
     def jsonBuilder = new groovy.json.JsonBuilder(btk_inputs)
     file("${task.workDir}/btk_params_file.json").text = jsonBuilder.toPrettyString()
