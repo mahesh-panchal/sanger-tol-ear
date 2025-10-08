@@ -162,7 +162,7 @@ workflow EAR {
                 ch_btk_ncbi_taxonomy_path,
                 ch_busco_lineages,
                 ch_btk_taxid,
-                ch_busco_config,
+                ch_busco_config.ifEmpty([]),
                 [
                     'accession': 'GCA_0001',
                     'use_work_dir_as_temp': true,
