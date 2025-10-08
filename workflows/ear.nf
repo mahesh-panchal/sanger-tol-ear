@@ -164,7 +164,7 @@ workflow EAR {
                 ch_btk_taxid,
                 ch_busco_config.ifEmpty([]),
                 [
-                    'accession': 'GCA_0001',
+                    //  'accession': 'GCA_0001',
                     'use_work_dir_as_temp': true,
                     'align': true,
                 ],
