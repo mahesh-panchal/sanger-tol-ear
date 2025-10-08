@@ -169,7 +169,7 @@ workflow EAR {
                     'align': true,
                 ],
             ).json_params_file,
-            GENERATE_BTK_SAMPLESHEET.out.csv,
+            GENERATE_BTK_SAMPLESHEET.out.csv.map{ _meta, btk_samplesheet -> btk_samplesheet },
             params.btk_extra_config ? file(params.btk_extra_config, checkIfExists: true) : [],
             workflow.workDir.resolve('sanger-tol/blobtoolkit').toUriString(),
         )
