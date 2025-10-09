@@ -174,7 +174,8 @@ workflow EAR {
             workflow.workDir.resolve('sanger-tol/blobtoolkit').toUriString(),
         )
         ch_versions = ch_versions.mix(
-            SANGER_TOL_BTK.out.outdir.map { outdir -> outdir.resolve('pipeline_info/sanger-tol_blobtoolkit_software_versions.yml') }
+            // NOTE: The path is dependent on pipeline version.
+            SANGER_TOL_BTK.out.outdir.map { outdir -> outdir.resolve('pipeline_info/blobtoolkit/blobtoolkit_software_mqc_versions.yml') }
         )
     }
 
