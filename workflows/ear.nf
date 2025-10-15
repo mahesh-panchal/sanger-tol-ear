@@ -66,14 +66,14 @@ workflow EAR {
     //          IF HAPLOTIGS EXISTS THEN MERGE WITH HAPLOTYPE ASSEMBLY
     //
     ch_reference_haplotigs
-        .ifEmpty('NO_HAPLOTIGS').view()
-        .combine(ch_sample_id).view()
-        .combine(ch_reference_hap2).view()
+        .ifEmpty([])
+        .combine(ch_sample_id)
+        .combine(ch_reference_hap2.ifEmpty([]))
         .branch { haplotigs, meta_sample_id, hap2 ->
-            concat_needed: haplotigs != 'NO_HAPLOTIGS'
-            return tuple([id: meta_sample_id], [hap2, haplotigs])
+            concat_needed: haplotigs && hap2
+                return tuple([id: meta_sample_id], [hap2, haplotigs] )
             no_concat: true
-            return hap2
+                return tuple([id: meta_sample_id], [hap2, haplotigs].findAll() )
         }
         .set { processing_branch }
 
@@ -106,8 +106,8 @@ workflow EAR {
         //
         ch_reference_hap1
             .combine(ch_haplotype_fasta)
-            .combine(ch_fastk_hist.view())
-            .combine(ch_fastk_ktab.view())
+            .combine(ch_fastk_hist)
+            .combine(ch_fastk_ktab)
             .map { meta1, primary, _meta2, haplotigs, fastk_hist, fastk_ktab ->
                 tuple(
                     meta1,
