@@ -68,7 +68,7 @@ workflow EAR {
     ch_reference_haplotigs
         .ifEmpty([[]])
         .combine(ch_sample_id)
-        .combine(ch_reference_hap2.ifEmpty([[]]))
+        .combine(ch_reference_hap2.ifEmpty([[]])).view()
         .branch { haplotigs, meta_sample_id, hap2 ->
             concat_needed: haplotigs && hap2
                 return tuple([id: meta_sample_id], [hap2, haplotigs] )
