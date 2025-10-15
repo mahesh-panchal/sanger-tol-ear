@@ -66,9 +66,9 @@ workflow EAR {
     //          IF HAPLOTIGS EXISTS THEN MERGE WITH HAPLOTYPE ASSEMBLY
     //
     ch_reference_haplotigs
-        .ifEmpty([])
+        .ifEmpty([[]])
         .combine(ch_sample_id)
-        .combine(ch_reference_hap2.ifEmpty([]))
+        .combine(ch_reference_hap2.ifEmpty([[]]))
         .branch { haplotigs, meta_sample_id, hap2 ->
             concat_needed: haplotigs && hap2
                 return tuple([id: meta_sample_id], [hap2, haplotigs] )
