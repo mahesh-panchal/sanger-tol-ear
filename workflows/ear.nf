@@ -123,7 +123,7 @@ workflow EAR {
         // MODULE: MERQURYFK PLOTS OF GENOME
         //
         MERQURYFK_MERQURYFK(
-            merquryfk_input,
+            merquryfk_input.view(),
             [],
             [],
         )
