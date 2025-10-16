@@ -45,7 +45,7 @@ workflow YAML_INPUT {
     reference_hap1
     reference_hap2
     reference_haplotigs
-    cpretext_aligner.       = Channel.of(inputs.curationpretext.aligner)
+    cpretext_aligner        = Channel.of(inputs.curationpretext.aligner)
     cpretext_telomere_motif = Channel.of([id: inputs.assembly_id], inputs.curationpretext.telomere_motif)
     cpretext_hic_dir        = Channel.fromPath(inputs.curationpretext.hic_dir, checkIfExists: true, type: 'dir')
     fastk_hist              = Channel.fromPath(inputs.merquryfk.fastk_hist, checkIfExists: true)
