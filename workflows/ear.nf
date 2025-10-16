@@ -68,12 +68,12 @@ workflow EAR {
     ch_reference_haplotigs
         .ifEmpty([[]])
         .combine(ch_sample_id)
-        .combine(ch_reference_hap2.ifEmpty([[]])).view()
+        .combine(ch_reference_hap2.ifEmpty([[]]))
         .branch { haplotigs, meta_sample_id, hap2 ->
             concat_needed: haplotigs && hap2
-                return tuple([id: meta_sample_id], [hap2, haplotigs] )
+                return tuple(meta_sample_id, [hap2, haplotigs] )
             no_concat: true
-                return tuple([id: meta_sample_id], [hap2, haplotigs].findAll() )
+                return tuple(meta_sample_id, [hap2, haplotigs].findAll() )
         }
         .set { processing_branch }
 
