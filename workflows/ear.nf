@@ -107,7 +107,7 @@ workflow EAR {
         ch_reference_hap1
             .combine(ch_haplotype_fasta)
             .combine(ch_fastk_hist)
-            .combine(ch_fastk_ktab)
+            .combine(ch_fastk_ktab.toList()) // Convert to list of list
             .map { meta1, primary, _meta2, haplotigs, fastk_hist, fastk_ktab ->
                 tuple(
                     meta1,
